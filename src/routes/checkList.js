@@ -23,6 +23,15 @@ Router.get('/new', async (req, res) => {
     }
 })
 
+Router.get('/:id/edit', async(req, res) =>{
+    try{
+        let checklist = await Checklist.findById(req.params.id);
+        res.status(200).render('checklists/edit', {checklist: checklist})
+    }catch(error){
+        res.status(500).render('pages/error', {error: 'Erro ao exibir a edição de listas de tarefas'})
+    }
+})
+
 Router.post('/', async (req, res) => {
     let { name } = req.body.checklist;
     let checklist = new Checklist({ name })
@@ -44,15 +53,16 @@ Router.get('/:id', async (req, res) => {
     }
 })
 
-
+// Permite editar 
 Router.put('/:id', async (req, res) => {
-    let { name } = req.body
-    // é o campo que desejo atualizar 
+    let { name } = req.body.checklist
+    let checklist = await Checklist.findById(req.params.id)
     try {
-        let checklist = await Checklist.findByIdAndUpdate(req.params.id, { name }, { new: true });
-        res.status(200).json(checklist)
+        await checklist.updateOne({name});
+        res.redirect('/checkList')
     } catch (error) {
-        res.status(422).json(error)
+        let errors = error.errors
+        res.status(422).render('checklist/edit', {checklist: {...checklist, errors}})
     }
 })
 
